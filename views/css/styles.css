@@ -1,0 +1,248 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    color:aliceblue;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background: radial-gradient(rgb(0, 0, 0), rgb(34, 21, 65));
+}
+
+body {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    text-align: center;
+    margin-top: auto;
+}
+
+img {
+    margin-right: 1em;
+    border-radius: 0.5em;
+    border: solid aliceblue 2px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+nav ul {
+    /* list-style-type: none; */
+    display: inline-flex;
+    align-items: center;
+}
+
+nav ul li {
+    margin-left: 1em;
+    flex: 1 1 0px;
+    font-size: 1.2rem;
+}
+
+a {
+    color: aliceblue;
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 2.2em;
+}
+
+p {
+    font-size: larger;
+}
+
+form { 
+    display: flex;
+    flex-direction: column;
+}
+
+form button {
+    margin-top: 1em;
+}
+
+#homeRecents {
+    text-align: center;
+}
+
+#content {
+    height: 4em;
+    resize: both;
+}
+
+#navBar {
+    display: flex;
+    /* background-color: rgb(172, 248, 179); */
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1em 0 1em;
+}
+
+#post-status-bar-date {
+    margin-left: 2em;
+}
+
+#post-status-bar-likes {
+    align-self: flex-start;
+}
+
+.logo {
+    display: flex;
+    /* width: 1em; */
+}
+
+.user-info {
+    text-align: center;
+    width: 30%;
+}
+
+.user-posts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-avatar {
+    width: 50%;
+}
+
+.profile-container {
+    display: flex;
+    justify-content: center;
+}
+
+.post, .profile-info, .register-area, .login-area {
+    padding: 1em;
+    background-color: rgba(35, 15, 95, 0.728);
+    border-radius: 1em;
+}
+
+.register-area, .login-area {
+    padding: 0 3em 9em 3em;
+}
+
+
+.posts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.post {
+    display: flex;
+    width: 50%;
+    margin-bottom: 6%;
+}
+
+.post h1 {
+    font-size: larger;
+}
+
+.post-content h1, .profile-info h1 {
+    margin: 0;
+}
+
+.post-avatar img {
+    width: 2.5em;
+}
+
+.post-status-bar {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px solid black;
+}
+
+.post-status-bar button {
+    background: none;
+    border: none;
+    color: aliceblue;
+    font-size: larger;
+}
+
+.post-status-bar .like:hover { 
+    color: red;
+    transition: 0.25s;
+}
+
+.post-status-bar .delete:hover { 
+    color: gray;
+    transition: 0.25s;
+}
+
+/* .post-status-bar:nth-child(3) {
+    margin-left: 10%;
+} */
+
+.post-form {
+    width: 100%;
+}
+
+.post-form h1 {
+    text-align: center;
+}
+
+.content-container {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 0 1em 0 1em;
+}
+
+.login-register {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    /* margin-top: 11%; */
+}
+
+#content {
+    margin-top: 1em;
+    height: 15em;
+    resize:vertical;
+}
+
+/* .login-register:nth-child(1) {
+    margin: 1em 0 1em 0;
+} */
+
+@media screen and (min-width: 0px) {
+    .login-area { margin-bottom: 1em; }
+    .register-area { margin-top: 1em; }
+    .login-register { flex-direction: column; margin-top: 3%; }
+    .content-container { flex-direction: column; align-items: center; }
+    .post {width: 90%;}
+    .logo img { width: 5em; height: 5em; }
+    .post-form { width: 80%; }
+    #navBar { flex-direction: column; }
+    
+}
+
+@media screen and (min-width: 550px) {
+    #navBar { flex-direction: row; }
+}
+
+@media screen and (min-width: 800px) {
+    .post { width: 75%; }
+    .logo img { width: 10em; height: 10em; }
+}
+
+@media screen and (min-width: 900px) {
+    .post { width: 50vw; }
+    .login-area { margin-bottom: 0; }
+    .register-area { margin-top: 0; }
+    .login-register { flex-direction: row; margin-top: 11%; }
+}
+
+@media screen and (min-width: 1024px) {
+    .content-container { flex-direction: row; align-items: flex-start; }
+    .post-form { width: 100%; }
+    
+}
+
+@media screen and (min-width: 1250px) {
+    .post { width: 55vw; }
+}
+
+/* @media and (min-width:1500px) {
+    .post { width: 75vw; }
+} */

@@ -1,0 +1,52 @@
+{{! Partial for a single post }}
+<div class="post">
+    <div class="post-avatar">
+        <!-- the user's avatar -->
+        <img src="/avatar/{{username}}" alt="user avatar">
+    </div>
+    <div class="post-content preserve-newlines">
+        <!-- the post -->
+        <h1>{{title}}</h1>
+        <p>{{content}}</p>
+        <div class="post-status-bar">
+            <!-- everything that is shown in the status bar -->
+            <!-- Heart = ♥ -->
+            <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+            {{#if (eq user.username username)}}
+                <button class="delete" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
+            {{else}}
+                <button class="like" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button>
+            {{/if}}
+
+            <div id="post-status-bar-likes">{{likes}} Likes</div>
+            <div id="post-status-bar-date">Posted by {{username}} on {{timestamp}}</div>
+        </div>        
+    </div>
+</div>
+<script>
+
+    function handleLikeClick(event) {
+        const postId = event.target.getAttribute('data-id');
+
+        // fetch a post for likeing the selcted post
+        fetch(`like/${postId}`, {method: 'POST'})
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+
+    function handleDeleteClick(event) {
+        const buttonElement = event.currentTarget; 
+        const postId = buttonElement.getAttribute('data-id');
+
+        // fetch a post for deleting the selected post
+        fetch(`delete/${postId}`, {method: 'POST'})
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }    
+</script>
