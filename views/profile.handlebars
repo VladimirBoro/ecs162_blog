@@ -20,11 +20,18 @@
 <section class="user-posts">
     <!-- you can call posts tweets, or truths, or whatever, these are neologisms. Choose your own new in server.js -->
     <h2>Your {{{postNeoType}}}s</h2>
-    
+    <div class="postFilter">
+            <label for="post-filters">Filter Posts:</label>
+            <select name="posts" id="post-filters">
+                <option value="newest" {{#if (eq sortType 'newest')}}selected{{/if}}>Newest</option>
+                <option value="oldest" {{#if (eq sortType 'oldest')}}selected{{/if}}>Oldest</option>
+                <option value="mostLiked" {{#if (eq sortType 'mostLiked')}}selected{{/if}}>Most Liked</option>
+            </select>
+        </div>
     <!-- you'll need to make this conditaionl and #each expression work -->
-    {{#if user.posts.length}}
+    {{#if userPosts}}
         <ul>
-            {{#each user.posts}}
+            {{#each userPosts}}
                 {{> post this user=../user}}
             {{/each}}
         </ul>
@@ -33,3 +40,21 @@
         <p>You have yet to tell any {{postNeoType}}s.</p>
     {{/if}}
 </section>
+
+<script>
+    const postFilters = document.getElementById('post-filters');
+
+function handleSortChange(event) {
+    const type = event.target.value;
+
+    // sort posts and then reload the window
+    fetch(`sortUsrPosts/${type}`, {method: 'POST'})
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+}
+
+postFilters.addEventListener('change', handleSortChange);
+</script>

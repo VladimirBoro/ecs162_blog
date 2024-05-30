@@ -32,6 +32,14 @@
     <section class="posts-list">
         <!-- recent posts -->
         <h1 id="homeRecents">Recently Revealed Truths</h1>
+        <div class="postFilter">
+            <label for="post-filters">Filter Posts:</label>
+            <select name="posts" id="post-filters">
+                <option value="newest" {{#if (eq sortType 'newest')}}selected{{/if}}>Newest</option>
+                <option value="oldest" {{#if (eq sortType 'oldest')}}selected{{/if}}>Oldest</option>
+                <option value="mostLiked" {{#if (eq sortType 'mostLiked')}}selected{{/if}}>Most Liked</option>
+            </select>
+        </div>
         {{#if posts.length}}
         <ul class="posts">
             {{#each posts}}
@@ -49,6 +57,23 @@
 
 {{! JavaScript for Emoji Integration }}
 <script>
+// post sorting below
+const postFilters = document.getElementById('post-filters');
+
+function handleSortChange(event) {
+    const type = event.target.value;
+
+    // sort posts and then reload the window
+    fetch(`sortPosts/${type}`, {method: 'POST'})
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+}
+
+postFilters.addEventListener('change', handleSortChange);
+
 /*
  You want to show a subset of the emojis. About 200. However,
  you also want the user to be able to search all emojis,
@@ -56,8 +81,8 @@
  that you have them.
 */
 const API_URL = "https://emoji-api.com/";
-// const API_KEY = "access_key=c4373b2d774bf7f8476789d9fb88dd3efe5c455e";
-const API_KEY = "access_key=placeholder";
+const API_KEY = "access_key=c4373b2d774bf7f8476789d9fb88dd3efe5c455e";
+//const API_KEY = "access_key=placeholder";
 const emojiSearchInput = document.getElementById("emoji-search");
 
 // Only add listener if user is logged in

@@ -57,8 +57,35 @@ form {
     flex-direction: column;
 }
 
+button, select {
+    color: aliceblue;
+    /* background-color: rgb(35, 15, 95); */
+    border-radius: 1em;
+    background: radial-gradient(rgb(0, 0, 0), rgb(35, 15, 95));
+    padding: 0.5em;
+}
+
+select {
+    border-radius: 1em;
+    margin-left: 0.5em;
+}
+
 form button {
     margin-top: 1em;
+    /* border: 1px solid aliceblue; */
+}
+
+.emoji-button {
+    padding: 0.5em 1em 0.5em 1em;
+}
+
+.post-button {
+    padding: 0.5em 2em 0.5em 2em;
+}
+
+.like, .delete {
+    padding: 0;
+    margin-right: 0.5em;
 }
 
 #homeRecents {
@@ -72,7 +99,6 @@ form button {
 
 #navBar {
     display: flex;
-    /* background-color: rgb(172, 248, 179); */
     justify-content: space-between;
     align-items: center;
     padding: 0 1em 0 1em;
@@ -88,7 +114,6 @@ form button {
 
 .logo {
     display: flex;
-    /* width: 1em; */
 }
 
 .user-info {
@@ -119,9 +144,16 @@ form button {
 }
 
 .register-area, .login-area {
-    padding: 0 3em 9em 3em;
+    /* padding: 0 3em 9em 3em; */
+    padding: 0 3em 3em 3em
 }
 
+.login-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
 .posts {
     display: flex;
@@ -170,10 +202,6 @@ form button {
     transition: 0.25s;
 }
 
-/* .post-status-bar:nth-child(3) {
-    margin-left: 10%;
-} */
-
 .post-form {
     width: 100%;
 }
@@ -192,7 +220,12 @@ form button {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    /* margin-top: 11%; */
+}
+
+.postFilter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #content {
@@ -200,10 +233,6 @@ form button {
     height: 15em;
     resize:vertical;
 }
-
-/* .login-register:nth-child(1) {
-    margin: 1em 0 1em 0;
-} */
 
 @media screen and (min-width: 0px) {
     .login-area { margin-bottom: 1em; }
@@ -236,7 +265,6 @@ form button {
 @media screen and (min-width: 1024px) {
     .content-container { flex-direction: row; align-items: flex-start; }
     .post-form { width: 100%; }
-    
 }
 
 @media screen and (min-width: 1250px) {
