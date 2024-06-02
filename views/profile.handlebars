@@ -14,6 +14,10 @@
             <li>Username: {{user.username}}</li>
             <li>Member Since: {{user.memberSince}}</li>
         </ul>
+        <section>
+            <button id="delete" onclick="window.location.href='/deleteUser'"><i class="fas fa-trash-alt"></i></button>
+            <span>Delete Profile</span>
+        </section>
     </section>
 </div>
 
@@ -42,7 +46,7 @@
 </section>
 
 <script>
-    const postFilters = document.getElementById('post-filters');
+const postFilters = document.getElementById('post-filters');
 
 function handleSortChange(event) {
     const type = event.target.value;
@@ -51,7 +55,7 @@ function handleSortChange(event) {
     fetch(`sortUsrPosts/${type}`, {method: 'POST'})
     .then(response => {
         if (response.ok) {
-            window.location.reload();
+            window.location.href('/');
         }
     });
 }

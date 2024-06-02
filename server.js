@@ -10,6 +10,7 @@ const passport = require('passport');
 const crypto = require('crypto');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const dotenv = require('dotenv');
+const { get } = require('emoji-api');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -181,7 +182,14 @@ app.post('/posts', async (req, res) => {
     res.redirect('/');
 });
 app.post('/like/:id', async (req, res) => {
-    if (await updatePostLikes(req)) {
+    // only logged in user may like a post
+    if (req.session.loggedIn) {
+        const postId = req.params.id;
+        const userId = await getCurrentUser(req);
+        const alreadyLiked = await isPostLikedByCurrentUser(userId.id, postId);
+
+        // update like based on whether user has like it already or not
+        await updatePostLikes(alreadyLiked, userId, postId);
         res.redirect('/');
     }
 });
@@ -219,6 +227,21 @@ app.post('/sortPosts/:type', (req, res) => {
 app.post('/sortUsrPosts/:type', (req, res) => {
     sortType = req.params.type;
     res.redirect('/profile');
+});
+app.get('/deleteUser', async (req, res) => {
+    const user = await getCurrentUser(req) || {};
+    res.render('deleteUser', { user });
+});
+app.post('/deleteUser', async (req, res) => {
+    // get and remove current user from db
+    console.log("deleting user now...")
+    const user = await getCurrentUser(req);
+    console.log(user.username);
+    await removeUser(user.username);
+
+    // destroy session and redirect back home
+    req.session.destroy();
+    res.redirect('/');
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -297,6 +320,21 @@ function getTime() {
     
     // YYYY-MM-DD HR:MIN timestamp format
     return `${year}-${month}-${day} at ${hour}:${minute}`;
+}
+
+/*
+    removes the user from the users table
+    and removes said users posts from the posts table
+*/
+async function removeUser(username) {
+    await db.run(
+        'DELETE FROM users WHERE username = ?',
+        [username]
+    );
+    await db.run(
+        'DELETE FROM posts WHERE username = ?',
+        [username]
+    );
 }
 
 // Function to add a new user
@@ -390,25 +428,46 @@ async function renderProfile(req, res) {
     res.render('profile', { user, userPosts, sortType });
 }
 
-// Function to update post likes
-async function updatePostLikes(req) {
-    // only a logged in user may like a post
-    if (req.session.loggedIn) {
-        const postId = req.params.id;
-
-        // get post from postId
-        let post = await db.get(
-            'SELECT * FROM posts WHERE id = ?',
-            [postId]
-        );
-
-        // update post likes by one
-        await db.run(
-            'UPDATE posts SET likes = ? WHERE id = ?',
-            [post.likes + 1, postId]
-        );
-
+async function isPostLikedByCurrentUser(userId, postId) {
+    const likePair = await db.get(
+        `SELECT * FROM likes WHERE postId = ? AND userId = ?`, 
+        [postId, userId]
+    );
+    console.log(likePair);
+    if (likePair) {
         return true;
+    }
+
+    return false;
+}
+
+// Function to update post likes
+async function updatePostLikes(alreadyLiked, userId, postId) {
+    // get post associated with postId
+    let post = await db.get(
+        'SELECT * FROM posts WHERE id = ?',
+        [postId]
+    );
+    
+    let change = alreadyLiked ? -1 : 1;
+    // console.log("liked?", alreadyLiked, change, postId, userId.id);
+
+    // update post likes by -/+ one
+    await db.run(
+        'UPDATE posts SET likes = ? WHERE id = ?',
+        [post.likes + change, postId]
+        );
+        
+    // removed our like from post so remove info from likes table
+    if (change < 0) {
+        await db.run('DELETE FROM likes WHERE postId = ? AND userId = ?',
+        [postId, userId.id])
+    }
+    // added a like so insert info into likes table
+    else {
+        await db.run('INSERT INTO likes (postId, userId) VALUES (?, ?)',
+        [postId, userId.id])
+
     }
 
     return false;
@@ -426,11 +485,7 @@ async function handleAvatar(req, res) {
 // Function to get the current user from session
 async function getCurrentUser(req) {
     const user = await findUserById(req.session.userId);
-    if (user) {
-        return user;
-    }
-
-    return undefined;
+    return user;
 }
 
 // Function to get all posts, sorted by latest first

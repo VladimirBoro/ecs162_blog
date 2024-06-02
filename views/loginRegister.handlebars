@@ -9,27 +9,7 @@
             <p style="color: red;">{{loginError}}</p>
         {{/if}}
         <form action="/auth/google" method="GET">
-            <!-- the login form goes here -->  
-            {{!-- <label for="login">Username:</label>
-            <input type="text" name="login" id="login"> --}}
             <button type="submit">Login With Google</button>
         </form>
     </section>
 </section>
-
-    <!-- say --OR-- ... with style -->
-    {{!-- <section>-OR-</section>
-
-    <section class = "register-area">
-        <h2>Register</h2>
-        <!-- errors will appear here -->
-        {{#if regError}}
-            <p style="color: red;">{{regError}}</p>
-        {{/if}}
-        <form action="/register" method="POST">
-            <!-- the registration form goes here -->
-            <label for="register">Username:</label>
-            <input type="text" name="register" id="register" required>
-            <button type="submit">Register</button>
-        </form>
-    </section> --}}
