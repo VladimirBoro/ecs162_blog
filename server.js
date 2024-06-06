@@ -10,7 +10,6 @@ const passport = require('passport');
 const crypto = require('crypto');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const dotenv = require('dotenv');
-const { get } = require('emoji-api');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -126,6 +125,7 @@ app.use((req, res, next) => {
 app.use(express.static('views'));                  // Serve static files
 app.use(express.urlencoded({ extended: true }));    // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());                            // Parse JSON bodies (as sent by API clients)
+// app.use('/partials', express.static(path.join(__dirname, 'views', 'partials'))); // Serve Handlebars partials from the "views/partials" directory
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
@@ -150,7 +150,7 @@ app.get('/auth/google/callback',
 // template
 //
 app.get('/', async (req, res) => {
-    const posts = await getPosts(sortType);
+    const posts = await getPosts(sortType) || {};
     const user = await getCurrentUser(req) || {};
     res.render('home', { posts, user, sortType });
 });
@@ -173,14 +173,14 @@ app.get('/error', (req, res) => {
     res.render('error');
 });
 
-// Additional routes that you must implement
-
+// Add a new post and redirect to home
 app.post('/posts', async (req, res) => {
-    // Add a new post and redirect to home
     const user = await getCurrentUser(req) || {};
     await addPost(req.body.title, req.body.content, user);
     res.redirect('/');
 });
+
+// POST: a post like request
 app.post('/like/:id', async (req, res) => {
     // only logged in user may like a post
     if (req.session.loggedIn) {
@@ -193,22 +193,48 @@ app.post('/like/:id', async (req, res) => {
         res.redirect('/');
     }
 });
+
+app.get('/comments/:id', async (req, res) => {
+    const comments = await getPostComments(req.params.id);
+    // send back post comments as a response
+    res.json(comments);
+});
+
+// leave a commnent on a post, POST request comes from home page
+app.post('/comments/:id/:page', async (req, res) => {
+    await addComment(req);
+    // redirect to either home or profile page
+    let pagePath;
+    if (req.params.page === 'home') {
+        pagePath = '/';
+    }
+    else {
+        pagePath = '/profile';
+    }
+    res.redirect(pagePath);
+});
+
 app.get('/profile', isAuthenticated, (req, res) => {
     renderProfile(req, res);
 });
+
 app.get('/avatar/:username', (req, res) => {
     // Serve the avatar image for the user
     handleAvatar(req, res);
 });
+
 app.post('/register', (req, res) => {
     registerUser(req, res);
 });
+
 app.post('/login', (req, res) => {
     loginUser(req, res);
 });
+
 app.get('/logout', (req, res) => {
     logoutUser(req, res);
 });
+
 app.get('/googleLogout', (req, res) => {
     req.session.destroy();
     // manually do locals cause main layout thinks it is logged in still
@@ -216,27 +242,30 @@ app.get('/googleLogout', (req, res) => {
     res.locals.userId = '';
     res.render('googleLogout');
 });
+
 app.post('/delete/:id', isAuthenticated, async (req, res) => {
-    await deletePost(req, res);
+    await deletePost(req);
     res.redirect('/');
 });
+
 app.post('/sortPosts/:type', (req, res) => {
     sortType = req.params.type;
     res.redirect('/');
 });
+
 app.post('/sortUsrPosts/:type', (req, res) => {
     sortType = req.params.type;
     res.redirect('/profile');
 });
+
 app.get('/deleteUser', async (req, res) => {
     const user = await getCurrentUser(req) || {};
     res.render('deleteUser', { user });
 });
+
 app.post('/deleteUser', async (req, res) => {
     // get and remove current user from db
-    console.log("deleting user now...")
     const user = await getCurrentUser(req);
-    console.log(user.username);
     await removeUser(user.username);
 
     // destroy session and redirect back home
@@ -257,6 +286,121 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// connect to our db
+async function connectToDb() {
+    db = await sqlite.open({ filename: DB_FILE_NAME, driver: sqlite3.Database });
+
+    const usersTableExists = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='users';`);
+    const postsTableExists = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='posts';`);
+    const likesTableExists = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='likes';`);
+    const commentsTableExists = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='comments';`);
+
+    // if we have no tables then create the db
+    if (!usersTableExists && !postsTableExists && !likesTableExists && !commentsTableExists) {
+        initializeDB();
+    }
+}
+
+// initialize db with sample data
+async function initializeDB() {
+    // create our necessary tables
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            hashedGoogleId TEXT NOT NULL UNIQUE,
+            avatar_url TEXT,
+            memberSince DATETIME NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            username TEXT NOT NULL,
+            timestamp DATETIME NOT NULL,
+            likes INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            postId INTEGER NOT NULL,
+            userId INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            postId INTEGER NOT NULL,
+            userId INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            comment TEXT NOT NULL,
+            timestamp DATETIME NOT NULL
+        );
+    `);
+
+    // Create sample data to fill our tables with
+    const users = [
+        { username: 'MysticSeeker', hashedGoogleId: 'hashedGoogleId1', avatar_url: './imgs/MysticSeeker.png', memberSince: '2024-01-01 12:00:00' },
+        { username: 'QuantumDreamer', hashedGoogleId: 'hashedGoogleId2', avatar_url: './imgs/QuantumDreamer.png', memberSince: '2024-01-02 12:00:00' },
+        { username: 'DiscipleOfYakub', hashedGoogleId: 'hashedGoogleId3', avatar_url: './imgs/DiscipleOfYakub.png', memberSince: '2024-02-02 12:00:00' },
+        { username: 'EnigmaHunter', hashedGoogleId: 'hashedGoogleId4', avatar_url: './imgs/EnigmaHunter.png', memberSince: '2024-03-02 12:00:00' },
+    ];
+
+    const posts = [
+        { title: 'The Moon Landing Hoax', content: 'I believe the moon landing was faked. Here\'s why...', username: 'MysticSeeker', timestamp: '2024-01-01 12:30:00', likes: 0 },
+        { title: 'Flat Earth Theory', content: 'The Earth is not round. Here\'s the evidence...', username: 'QuantumDreamer', timestamp: '2024-01-02 12:30:00', likes: 1 },
+        { title: 'Secret Societies Control the World', content: 'There are powerful secret societies pulling the strings. Let me explain...', username: 'DiscipleOfYakub', timestamp: '2024-02-02 13:00:00', likes: 0 },
+        { title: 'The Illuminati Agenda', content: 'The Illuminati is real and they have a hidden agenda...', username: 'EnigmaHunter', timestamp: '2024-03-02 14:00:00', likes: 2 },
+        {
+            title: 'BEES???',
+            content: 'In recent years, the alarming decline in bee populations worldwide has become a pressing concern for scientists and environmentalists alike. Known as Colony Collapse Disorder (CCD), this phenomenon has seen worker bees vanish from their hives, leaving behind the queen and immature bees. While many attribute this crisis to pesticide use, habitat loss, and disease, a growing faction of conspiracy theorists believes there’s a more sinister explanation: a deliberate cover-up.',
+            username: 'DiscipleOfYakub',
+            timestamp: '2024-06-4 at 16:59',
+            likes: 3
+        }
+    ];
+
+    const comments = [
+        { postId: '1', userId: '2', username: 'QuantumDreamer', comment: 'bro u r so dum!', timestamp: '6pm' },
+        {
+            postId: '5',
+            userId: '4',
+            username: 'EnigmaHunter',
+            comment: 'u r wrong and a dummy!',
+            timestamp: '2024-06-4 at 16:59'
+        },
+        {
+            postId: '5',
+            userId: '1',
+            username: 'MysticSeeker',
+            comment: 'LOL so true!!!',
+            timestamp: '2024-06-4 at 16:59'
+        }
+    ];
+
+    // using a different method of filling tables trying to avoid strange bug where order inserted is messed up
+    for (const user of users) {
+        await db.run(
+            'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
+            [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince]
+        );
+    }
+
+    for (const post of posts) {
+        await db.run(
+            'INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
+            [post.title, post.content, post.username, post.timestamp, post.likes]
+        );
+    }
+
+    for (const comment of comments) {
+        await db.run(
+            'INSERT INTO comments (postId, userId, username, comment, timestamp) VALUES (?, ?, ?, ?, ?)',
+            [comment.postId, comment.userId, comment.username, comment.comment, comment.timestamp]
+        );
+    }
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -264,11 +408,6 @@ app.listen(PORT, () => {
 // sha-256 hashing for user google id
 function hashGoogleId(userId) {
     return crypto.createHash('sha256').update(userId).digest('hex');
-}
-
-// initialize db, async + await so initialization happens first
-async function connectToDb() {
-    db = await sqlite.open({ filename: DB_FILE_NAME, driver: sqlite3.Database });
 }
 
 // Function to find a user by username
@@ -327,14 +466,40 @@ function getTime() {
     and removes said users posts from the posts table
 */
 async function removeUser(username) {
+    // delete user form users table
+    const user = await findUserByUsername(username);
+
+    // delete all the comments the user made
+    await db.run(
+        'DELETE FROM comments WHERE userId = ?',
+        [user.id]
+    )
+
     await db.run(
         'DELETE FROM users WHERE username = ?',
         [username]
     );
+
+    // get all user posts
+    const userPosts = await db.all(
+        'SELECT * FROM posts WHERE username = ?',
+        [username]
+    );
+
+    // delete post from posts
     await db.run(
         'DELETE FROM posts WHERE username = ?',
         [username]
     );
+
+    // delete all comments from userPosts
+    userPosts.forEach(async post => {
+        const postId = post.id;
+        await db.run(
+            'DELETE FROM comments WHERE postId = ?',
+            [postId]
+        );
+    });
 }
 
 // Function to add a new user
@@ -424,7 +589,7 @@ async function getUserPosts(user, type) {
 // Function to render the profile page
 async function renderProfile(req, res) {
     const user = await getCurrentUser(req) || {};
-    userPosts = await getUserPosts(user, sortType);
+    const userPosts = await getUserPosts(user, sortType);
     res.render('profile', { user, userPosts, sortType });
 }
 
@@ -433,7 +598,7 @@ async function isPostLikedByCurrentUser(userId, postId) {
         `SELECT * FROM likes WHERE postId = ? AND userId = ?`, 
         [postId, userId]
     );
-    console.log(likePair);
+
     if (likePair) {
         return true;
     }
@@ -450,7 +615,6 @@ async function updatePostLikes(alreadyLiked, userId, postId) {
     );
     
     let change = alreadyLiked ? -1 : 1;
-    // console.log("liked?", alreadyLiked, change, postId, userId.id);
 
     // update post likes by -/+ one
     await db.run(
@@ -467,7 +631,6 @@ async function updatePostLikes(alreadyLiked, userId, postId) {
     else {
         await db.run('INSERT INTO likes (postId, userId) VALUES (?, ?)',
         [postId, userId.id])
-
     }
 
     return false;
@@ -480,6 +643,11 @@ async function handleAvatar(req, res) {
 
     const avatarPath = path.join(__dirname + "/views/", user.avatar_url);
     res.sendFile(avatarPath);
+}
+
+async function getPostComments(postId) {
+    comments = await db.all(`SELECT * FROM comments WHERE postId = ? ORDER BY id DESC`, [postId]);
+    return comments;
 }
 
 // Function to get the current user from session
@@ -518,12 +686,38 @@ async function addPost(title, content, user) {
     );
 }
 
-async function deletePost(req, res) {
+async function deletePost(req) {
     const postId = req.params.id;
 
+    // delete post from 'posts' table
     await db.run(
         'DELETE FROM posts WHERE id = ?',
         [postId]
+    );
+
+    // delete comments associated to post
+    await db.run(
+        'DELETE FROM comments WHERE postId = ?',
+        [postId]
+    );
+
+    await db.run(
+        'DELETE FROM likes WHERE postId = ?',
+        [postId]
+    );
+}
+
+async function addComment(req) {
+    const postId = req.params.id;
+    const user = await getCurrentUser(req);
+    const userId = user.id;
+    const username = user.username;
+    const comment = req.body.comment;
+    const timestamp = getTime();
+
+    await db.run(
+        'INSERT INTO comments (postId, userId, username, comment, timestamp) VALUES (?, ?, ?, ?, ?)',
+        [postId, userId, username, comment, timestamp]
     );
 }
 
