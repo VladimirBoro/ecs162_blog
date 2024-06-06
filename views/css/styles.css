@@ -1,3 +1,10 @@
+/* ~~~ blog wide styling ~~~ */
+.post, .profile-info, .register-area, .login-area, .logout-area, .delete-confirm-area {
+    padding: 1em;
+    background-color: rgba(35, 15, 95, 0.728);
+    border-radius: 1em;
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -17,6 +24,10 @@ footer {
     margin-top: auto;
 }
 
+footer p {
+    margin: 1em;
+}
+
 img {
     margin-right: 1em;
     border-radius: 0.5em;
@@ -28,7 +39,6 @@ ul {
 }
 
 nav ul {
-    /* list-style-type: none; */
     display: inline-flex;
     align-items: center;
 }
@@ -50,6 +60,7 @@ h1 {
 
 p {
     font-size: larger;
+    margin: 0;
 }
 
 form { 
@@ -59,7 +70,6 @@ form {
 
 button, select {
     color: aliceblue;
-    /* background-color: rgb(35, 15, 95); */
     border-radius: 1em;
     background: radial-gradient(rgb(0, 0, 0), rgb(35, 15, 95));
     padding: 0.5em;
@@ -72,29 +82,20 @@ select {
 
 form button {
     margin-top: 1em;
-    /* border: 1px solid aliceblue; */
 }
 
-.emoji-button {
-    padding: 0.5em 1em 0.5em 1em;
+/* ~~~ main.handlebars template styling ~~~ */
+.logo {
+    display: flex;
 }
 
-.post-button {
-    padding: 0.5em 2em 0.5em 2em;
+.header-avatar {
+    width: 50%;
 }
 
-.like, .delete {
-    padding: 0;
-    margin-right: 0.5em;
-}
-
-#homeRecents {
+.user-info {
     text-align: center;
-}
-
-#content {
-    height: 4em;
-    resize: both;
+    width: 30%;
 }
 
 #navBar {
@@ -104,21 +105,51 @@ form button {
     padding: 0 1em 0 1em;
 }
 
-#post-status-bar-date {
-    margin-left: 2em;
-}
-
-#post-status-bar-likes {
-    align-self: flex-start;
-}
-
-.logo {
+/* ~~~ home.handlebars styling ~~~ */
+.content-container {
     display: flex;
+    justify-content: space-evenly;
+    margin: 0 1em 0 1em;
 }
 
-.user-info {
+.emoji-button {
+    padding: 0.5em 1em 0.5em 1em;
+}
+
+/* also in deleteUser */
+.post-button, .delete-confirm-buttons button {
+    padding: 0.5em 2em 0.5em 2em;
+}
+
+/* used in profile too */
+.postFilter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.post-form {
+    width: 100%;
+}
+
+.post-form h1 {
     text-align: center;
-    width: 30%;
+}
+
+#content {
+    margin-top: 1em;
+    height: 15em;
+    resize:vertical;
+}
+
+#homeRecents {
+    text-align: center;
+}
+
+/* ~~~ profile.handlebars styling ~~~ */
+.profile-container {
+    display: flex;
+    justify-content: center;
 }
 
 .user-posts {
@@ -128,55 +159,30 @@ form button {
     align-items: center;
 }
 
-.header-avatar {
-    width: 50%;
+#noUserPosts {
+    margin-top: 2em;
 }
 
-.profile-container {
-    display: flex;
-    justify-content: center;
-}
-
-.post, .profile-info, .register-area, .login-area {
-    padding: 1em;
-    background-color: rgba(35, 15, 95, 0.728);
-    border-radius: 1em;
-}
-
-.register-area, .login-area {
-    /* padding: 0 3em 9em 3em; */
-    padding: 0 3em 3em 3em
-}
-
-.login-area, .register-area, .delete-confirm-area {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.posts {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
+/* ~~~ post.handlebars partial styling ~~~ */
 .post {
     display: flex;
     width: 50%;
+    padding-bottom: 0;
     margin-bottom: 6%;
 }
 
 .post h1 {
     font-size: larger;
+    border-bottom: black solid 2px;
 }
 
-.post-content h1, .profile-info h1 {
-    margin: 0;
+.post-content { 
+    width: 100%;
+    border-radius: 1em;
 }
 
-.post-avatar img {
-    width: 2.5em;
+.post-content p {
+    padding: 0.5em;
 }
 
 .post-status-bar {
@@ -203,25 +209,94 @@ form button {
     transition: 0.25s;
 }
 
-.post-form {
+.post-avatar img {
+    width: 2.5em;
+}
+
+#post-status-bar-date {
+    margin-left: 2em;
+}
+
+#post-status-bar-likes {
+    align-self: flex-start;
+}
+
+.showCommentsBtn, .commentBtn {
+    margin: 0.5em 0 0.5em 0;
+}
+
+.like, .delete {
+    padding: 0;
+    margin-right: 0.5em;
+}
+
+/* ~~~ deleteUser.handlebars styling ~~~ */
+.delete-confirm-buttons {
+    margin-top: 1em;
+    text-align: center;
     width: 100%;
 }
 
-.post-form h1 {
-    text-align: center;
-}
-
-.content-container {
+/* ~~~ comments styling, apart of posts styling ~~~ */
+.comment {
     display: flex;
-    justify-content: space-evenly;
-    margin: 0 1em 0 1em;
+    border: black solid 2px;
+    border-radius: 1em;
+    margin: 0.5em 0 0.5em 0;
 }
 
-/* .delete-confirm-area {
+.comment img {
+    width: 2em;
+    margin: 0;
+}
+
+.comment-content {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+.comment-content p {
+    font-size: medium;
+}
+
+.comment-username {
+    border-bottom: black solid 2px;
+    padding: 0 0.5em 0 0.5em;
+}
+
+.comment-avatar {
+    border-right: black solid 2px;
+}
+
+.comment-content #commentTimestamp {
+    font-size: small;
+    border-top: black solid 2px;
+}
+
+#comment {
+    resize: vertical;
+}
+
+/* ~~~ login and logout styling ~~~ */
+.login-area, .logout-area {
+    padding: 2em;
+}
+
+.register-area {
+    padding: 0 3em 3em 3em
+}
+
+.login-area p , .logout-area p {
+    margin: 1em;
+}
+
+.logout-area, .login-area, .register-area, .delete-confirm-area {
     display: flex;
     flex-direction: column;
     justify-content: center;
-} */
+    align-items: center;
+}
 
 .login-register, .delete-confirm {
     display: flex;
@@ -229,49 +304,44 @@ form button {
     align-items: center;
 }
 
-.postFilter {
+/* .posts {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+} */
+
+.post-content h1, .profile-info h1 {
+    margin: 0;
 }
 
-.post-content { width: 100%; }
 
-.post-content p {
-    padding: 0.5em;
-    /* border: 2px solid black; */
-}
-
-#content {
-    margin-top: 1em;
-    height: 15em;
-    resize:vertical;
-}
-
+/* ~~~ responsive styling ~~~ */
 @media screen and (min-width: 0px) {
-    .login-area { margin-bottom: 1em; }
+    /* .login-area { margin-bottom: 0em; } */
     .register-area { margin-top: 1em; }
     .login-register { flex-direction: column; margin-top: 3%; }
     .content-container { flex-direction: column; align-items: center; }
     .post {width: 90%;}
     .logo img { width: 5em; height: 5em; }
     .post-form { width: 80%; }
+    .delete-confirm-area { margin-top: 10%; width: 70%}
     #navBar { flex-direction: column; }
-    
 }
 
 @media screen and (min-width: 550px) {
+    .delete-confirm-area { width: 40%; }
     #navBar { flex-direction: row; }
 }
 
 @media screen and (min-width: 800px) {
+    .delete-confirm-area { width: 30%; }
     .post { width: 75%; }
     .logo img { width: 6em; height: 6em; }
 }
 
 @media screen and (min-width: 900px) {
+    .delete-confirm-area { width: 20%; }
     .post { width: 50vw; }
-    .login-area { margin-bottom: 0; }
     .register-area { margin-top: 0; }
     .login-register { flex-direction: row; margin-top: 11%; }
 }
@@ -284,7 +354,3 @@ form button {
 @media screen and (min-width: 1250px) {
     .post { width: 55vw; }
 }
-
-/* @media and (min-width:1500px) {
-    .post { width: 75vw; }
-} */
