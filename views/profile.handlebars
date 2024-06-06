@@ -36,12 +36,12 @@
     {{#if userPosts}}
         <ul>
             {{#each userPosts}}
-                {{> post this user=../user}}
+                {{> post this user=../user loggedIn=../loggedIn page="profile"}}
             {{/each}}
         </ul>
     {{else}}
         <!-- fix this up with some helper functions and other handlebars expressions, or add you own character -->
-        <p>You have yet to tell any {{postNeoType}}s.</p>
+        <p id="noUserPosts">You have yet to tell any {{postNeoType}}s.</p>
     {{/if}}
 </section>
 
@@ -55,7 +55,7 @@ function handleSortChange(event) {
     fetch(`sortUsrPosts/${type}`, {method: 'POST'})
     .then(response => {
         if (response.ok) {
-            window.location.href('/');
+            window.location.reload();
         }
     });
 }

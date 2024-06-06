@@ -10,9 +10,9 @@
             <h1>Tell a Truth</h1>
             <form action="/posts" method="POST">
                 <!-- title input field name = "title" -->
-                <input type="text" placeholder="Title" name="title" id="title">
+                <input type="text" placeholder="Title" name="title" id="title" required>
                 <!-- text area input field name = "content" -->
-                <textarea type="text" placeholder="What truth shall you unveil today {{user.username}}?" name="content" id="content"></textarea>
+                <textarea type="text" placeholder="What truth shall you unveil today {{user.username}}?" name="content" id="content" required></textarea>
 
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
@@ -44,7 +44,7 @@
         <ul class="posts">
             {{#each posts}}
                 <!-- you have to pass the user in to posts and this is the syntax -->
-                {{> post this user=../user}}            
+                {{> post this user=../user loggedIn=../loggedIn page="home"}}            
             {{/each}}
         </ul>
         {{else}}

@@ -19,16 +19,109 @@
             {{/if}}
 
             <div id="post-status-bar-likes">{{likes}} Likes</div>
+            {{!-- dummy div fillers to make better spacing --}}
+            <div></div>
+            <div></div>
             <div id="post-status-bar-date">Posted by {{username}} on {{timestamp}}</div>
-        </div>        
+        </div>      
+
+        {{!-- now have the show comments button here, guests should be able to see them aswell --}}
+        <button class="showCommentsBtn" data-id="{{id}}" onclick="toggleCommentsButton(event)">Comments</button>
+        <section class="comments-container" data-id="{{id}}" style="display: none;">
+            {{#if loggedIn}}
+            {{!-- if user is logged in, show the comment txt box and submit button --}}
+                {{!-- <form action="" method="get" data-id="{{id}}"> --}}
+                <form action="/comments/{{id}}/{{page}}" method="POST">
+                    <textarea type="text" placeholder="leave a comment!" name="comment" id="comment" cols="30" rows="2" required></textarea>
+                    <button type="submit" class="commentBtn" data-id="{{id}}">comment</button>
+                </form>
+            {{/if}}
+            {{!-- this section here gets dynmically filled by toggleCommentsButton --}}
+        </section>
     </div>
 </div>
 <script>
+    // build a comment to be placed into the comment section
+    function buildComment(comment, postId) {
+        // create comment div
+        const commentDiv = document.createElement('div');
+        commentDiv.classList.add('comment');
+        commentDiv.dataset.id = postId;        
+
+        // create section for user avatar
+        const commentAvatar = document.createElement('div');
+        commentAvatar.classList.add('comment-avatar');
+        const avatarImg = document.createElement('img');
+        avatarImg.src = `avatar/${comment.username}`;
+        avatarImg.alt = 'user avatar image'
+        commentAvatar.appendChild(avatarImg);
+
+        // create container for rest of comment info
+        const commentContents = document.createElement('div');
+        commentContents.classList.add('comment-content', 'preserve-newlines');
+
+        // create username, comment contnent, and timestamp
+        const commentUsername = document.createElement('h1');
+        commentUsername.classList.add('comment-username');
+        commentUsername.textContent = comment.username;
+        const commentContent = document.createElement('p');
+        commentContent.textContent = comment.comment;
+        const commentTimestamp = document.createElement('p');
+        commentTimestamp.id = 'commentTimestamp';
+        commentTimestamp.textContent = `commented on ${comment.timestamp}`;
+
+        // append info to commentContents
+        commentContents.appendChild(commentUsername);
+        commentContents.appendChild(commentContent);
+        commentContents.appendChild(commentTimestamp);
+
+        // append img area and contents to the full comment region
+        commentDiv.appendChild(commentAvatar);
+        commentDiv.appendChild(commentContents);
+
+        return commentDiv;
+    }
+
+    // fetch and build post's comments and place them into comment section
+    async function toggleCommentsButton(event) {
+        const postId = event.target.getAttribute('data-id');
+        console.log("toggled comments...", typeof postId);
+        const container = document.querySelector(`.comments-container[data-id="${postId}"]`);
+
+        // if already showing comments, just hide them
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+            return;
+        }
+
+        // fetch post's comments and append them to the post's comment section
+        fetch(`comments/${postId}`, {method: 'GET'})
+        .then(response => response.json())
+        .then(comments => {
+            // get comment child
+            let containerChildren = document.querySelector(`.comment[data-id="${postId}"]`);
+
+            // remove all comment class children from this post
+            while (containerChildren) {
+                container.removeChild(containerChildren);
+                containerChildren = document.querySelector(`.comment[data-id="${postId}"]`);
+            }
+            
+            // append comments to html for rendering
+            comments.forEach(comment => {
+                const commentElement = buildComment(comment, postId);
+                container.appendChild(commentElement);
+            });
+
+            // display comment section
+            container.style.display = 'block';
+        })
+    }
 
     function handleLikeClick(event) {
         const postId = event.target.getAttribute('data-id');
 
-        // fetch a post for likeing the selcted post
+        // fetch a post for liking the selcted post
         fetch(`like/${postId}`, {method: 'POST'})
         .then(response => {
             if (response.ok) {

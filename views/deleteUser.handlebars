@@ -3,10 +3,10 @@
 <section class="delete-confirm">
     <section class="delete-confirm-area">
         <p>
-            Are you sure you want to delete your account {{user.username}}?<br>
+            Are you sure you want to delete your account {{user.username}}?<br><br>
             All your posts will be deleted along side your account.
         </p>
-        <section>
+        <section class="delete-confirm-buttons">
             <button onclick="window.location.href='/profile'">No</button>
             <button onclick="handleClickDeleteUser()">Yes</button>
         </section>
