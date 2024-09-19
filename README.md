@@ -40,5 +40,5 @@ Ensure you have the following installed:
 ### Setup
 
 1. **Clone the Repository.**
-2. **In the root directory run npm install.**
-3. **Run npm start to launch the app locally**
+2. **In the root directory run `npm install`.**
+3. **Run `npm start` to launch the app locally**
